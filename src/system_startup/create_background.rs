@@ -4,6 +4,8 @@ use bevy::prelude::*;
 
 use noise::{utils::*, Clamp, Perlin};
 
+use crate::game_states::GameStates;
+
 /// Creates world
 pub fn create_background(
     mut commands: Commands,
@@ -66,4 +68,6 @@ pub fn create_background(
             commands.spawn_bundle(sb);
         }
     }
+    println!("Generate World");
+    // app_state.set(GameStates::InGame).unwrap();
 }

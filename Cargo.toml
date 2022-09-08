@@ -8,12 +8,19 @@ edition = "2021"
 # Important! wgpu/Bevy needs this!
 resolver = "2"
 
+[workspace.metadata.dylint]
+libraries = [
+    { git = "https://github.com/MinerSebas/bevy_lint", branch = "main" },
+]
+
 [dependencies]
 bevy = { version = "0.8.1", features = ["dynamic"] }
 bevy-inspector-egui = "0.12.1"
 bevy_editor_pls = {git = "https://github.com/jakobhellermann/bevy_editor_pls"}
 rand = "0.8.5"
 noise = "0.7.0"
+bevy_asset_loader = "0.12"
+iyes_progress = "0.5.0"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]
