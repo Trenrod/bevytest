@@ -6,6 +6,8 @@ pub struct AssetsAtlasAnimationFromTo {
     pub to: usize,
 }
 
+pub static DEFAULT_FONT_PATH: &str = "fonts/Milky Coffee.ttf";
+
 // ASSETS SPRITES
 pub const ASSETS_PLAYER_SPRITE_DIMENSION: Vec2 = Vec2::new(94.0, 100.0);
 pub const ASSETS_PLAYER_SPRITE_ANIMATAION_LEFT: AssetsAtlasAnimationFromTo =

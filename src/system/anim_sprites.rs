@@ -1,9 +1,8 @@
 use bevy::prelude::*;
 
 use crate::{
-    components::{
-        animation_frames::AnimationFrames, animation_timer::AnimationTimer, movement::Movement,
-    },
+    bundles::animation_bundle::AnimationTimer,
+    components::{animation_frames::AnimationFrames, movement::Movement},
     statics::AssetsAtlasAnimationFromTo,
 };
 
@@ -17,8 +16,8 @@ pub fn animate_sprite(
     )>,
 ) {
     for (mut timer, mut sprite, anim_frames, movement) in &mut query {
-        timer.tick(time.delta());
-        if timer.just_finished() {
+        timer.timer.tick(time.delta());
+        if timer.timer.just_finished() {
             let cur_anim_frames: AssetsAtlasAnimationFromTo;
             if movement.velocity_unit_vector.x > 0.0 {
                 cur_anim_frames = anim_frames.walk_right.clone();
@@ -45,12 +44,10 @@ pub fn animate_sprite(
                 cur_anim_frames = anim_frames.walk_right.clone();
             }
 
-            if sprite.index < cur_anim_frames.from || sprite.index > cur_anim_frames.to {
-                sprite.index = cur_anim_frames.from;
-            } else if sprite.index + 1 > cur_anim_frames.to {
+            if sprite.index < cur_anim_frames.from || sprite.index + 1 > cur_anim_frames.to {
                 sprite.index = cur_anim_frames.from;
             } else {
-                sprite.index = sprite.index + 1;
+                sprite.index += 1;
             }
         }
     }

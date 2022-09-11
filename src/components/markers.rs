@@ -14,4 +14,4 @@ pub struct Enemy;
 
 /// Entity controller by bots
 #[derive(Component)]
-pub struct NPC;
+pub struct Npc;
