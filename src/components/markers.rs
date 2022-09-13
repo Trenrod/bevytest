@@ -4,6 +4,10 @@ use bevy::prelude::Component;
 #[derive(Component)]
 pub struct PlayerMarker;
 
+/// Action action triggered component, e.g. projectile, slash
+#[derive(Component)]
+pub struct InstantActionMarker;
+
 /// RemotePlayer, controlled by network user
 #[derive(Component)]
 pub struct RemotePlayer;

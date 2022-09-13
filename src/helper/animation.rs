@@ -8,3 +8,9 @@ pub fn get_default_animation_timer() -> AnimationTimer {
         timer: Timer::from_seconds(0.15, true),
     }
 }
+
+pub fn get_default_action_animation_timer() -> AnimationTimer {
+    AnimationTimer {
+        timer: Timer::from_seconds(0.05, true),
+    }
+}

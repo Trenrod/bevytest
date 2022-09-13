@@ -1,13 +1,17 @@
 use bevy::prelude::*;
 use bevy_rapier2d::na::{Point2, Vector2};
 
-use crate::components::{markers::PlayerMarker, movement::Movement};
+use crate::{
+    components::{markers::PlayerMarker, movement::Movement},
+    events::player_action_event::{ActionType, PlayerActionEvent},
+};
 
 pub fn keyboard_input(
     keys: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Movement, With<PlayerMarker>)>,
+    mut ev_player_action_event: EventWriter<PlayerActionEvent>,
+    mut query: Query<(Entity, &mut Movement, With<PlayerMarker>)>,
 ) {
-    let (mut movement, ()) = query.single_mut();
+    let (entity, mut movement, ()) = query.single_mut();
 
     if keys.pressed(KeyCode::W) {
         movement.velocity_unit_vector.y = 1.0;
@@ -34,5 +38,13 @@ pub fn keyboard_input(
 
         movement.velocity_unit_vector.x = norm_vec.x;
         movement.velocity_unit_vector.y = norm_vec.y;
+    }
+
+    // Actions
+    if keys.pressed(KeyCode::Space) {
+        ev_player_action_event.send(PlayerActionEvent {
+            actionType: ActionType::ActionAttack,
+            entity: entity,
+        });
     }
 }

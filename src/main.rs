@@ -2,6 +2,7 @@ mod atlas;
 mod bundles;
 mod components;
 mod config;
+mod events;
 mod game_states;
 mod helper;
 mod models;
@@ -13,15 +14,27 @@ mod ui;
 
 use bevy_editor_pls::prelude::*;
 
-use bevy::{prelude::*, render::texture::ImageSettings};
+use bevy::{
+    ecs::system::EntityCommands,
+    prelude::*,
+    render::texture::{self, ImageSettings},
+};
 
 use bevy_asset_loader::prelude::*;
-use components::{markers::PlayerMarker, movement::Movement};
+use bundles::{action_bundle::ActionInstantBundle, animation_bundle::AnimationActionBundle};
+use components::{
+    damage::Damage,
+    markers::{InstantActionMarker, PlayerMarker},
+    movement::Movement,
+};
+use config::action_config::{ActionConfig, ACTION_CONFIG_FIRE_SLASH};
+use events::player_action_event::PlayerActionEvent;
+use helper::animation::get_default_animation_timer;
 use iyes_loopless::prelude::*;
 
 use game_states::GameStates;
 use system::{
-    anim_sprites::animate_sprite,
+    anim_sprites::{animate_action_sprite, animate_sprite},
     enemy_spawner::{ai_bot_enemy, spawn_enemies, spawn_enemy_config},
     keyboard_input::keyboard_input,
     movement::movement,
@@ -30,6 +43,11 @@ use system_startup::{create_background::create_background, create_player::spawn_
 use ui::loading::ui_loading::{
     init_loading_screen, remote_loading_ui, update_loading_screen, update_loading_state,
     InitialisationFlags,
+};
+
+use crate::{
+    bundles::action_bundle::create_action_bundle,
+    helper::sprite_helper::get_textureatlas_from_texture_and_spritedetails,
 };
 
 fn system_startup(mut commands: Commands) {
@@ -43,17 +61,92 @@ pub struct GameAssets {
     pub player_swordfighter: Handle<Image>,
     #[asset(path = "atlases/terrain.png")]
     pub background_terrain: Handle<Image>,
+    #[asset(path = "atlases/fire_slash.png")]
+    pub action_fire_slash: Handle<Image>,
+}
+
+// fn set_action_bundle(
+//     mut entity: EntityCommands,
+//     action_config: &ActionConfig,
+//     transform: &Transform,
+// ) {
+//     let action_bundle = ActionInstantBundle {
+//         damage: Damage {
+//             damage_instant: Some(10.0),
+//             damage_type: None,
+//             damage_over_time: None,
+//             damage_per_ms: None,
+//         },
+//         marker: InstantActionMarker,
+//         animation: AnimationActionBundle {
+//             frames: action_config.animation_frames.clone(),
+//             timer: get_default_animation_timer(),
+//         },
+//         sprite: SpriteSheetBundle {
+//             transform: Transform {
+//                 translation: transform.translation.clone(),
+//                 ..Default::default()
+//             },
+//             texture_atlas
+//             ..Default::default()
+//         },
+//     };
+//     entity.insert_bundle(action_bundle);
+// }
+
+fn handle_action(
+    mut commands: Commands,
+    mut ev_player_action: EventReader<PlayerActionEvent>,
+    player_query: Query<(&Transform, &Movement), With<PlayerMarker>>,
+    game_assets: Res<GameAssets>,
+    mut texture_atlases: ResMut<Assets<TextureAtlas>>,
+) {
+    for ev in ev_player_action.iter() {
+        println!("handle_action");
+        if let Ok((player_transform, player_movement)) = player_query.get(ev.entity) {
+            // Dont spawn if not moving
+            if player_movement.velocity_unit_vector.x == 0.0
+                && player_movement.velocity_unit_vector.y == 0.0
+            {
+                return;
+            }
+
+            // Spawner position
+            let spawn_position = Vec2::new(
+                player_transform.translation.x,
+                player_transform.translation.y,
+            );
+
+            let texture_atlas = get_textureatlas_from_texture_and_spritedetails(
+                ACTION_CONFIG_FIRE_SLASH.sprite_details.clone(),
+                game_assets.action_fire_slash.clone(),
+            );
+            let texture_atlas_handle = texture_atlases.add(texture_atlas);
+            let action_bundle = create_action_bundle(
+                texture_atlas_handle,
+                &ACTION_CONFIG_FIRE_SLASH,
+                &spawn_position,
+                &player_movement.velocity_unit_vector,
+            );
+            commands.spawn_bundle(action_bundle);
+        } else {
+            println!("Could not find action spawner entity");
+        }
+    }
 }
 
 fn main() {
     App::new()
-        // Init initialisation state
-        .insert_resource(InitialisationFlags::init())
         // prevents blurry sprites
         .insert_resource(ImageSettings::default_nearest())
         // Bevy defaults
         .add_plugins(DefaultPlugins)
+        // Init initialisation state
+        .insert_resource(InitialisationFlags::init())
+        // Bevy default plugins
         .add_plugin(EditorPlugin)
+        // Player triggers action event
+        .add_event::<PlayerActionEvent>()
         // Add camera
         .add_startup_system(system_startup)
         // Initial GameState state
@@ -77,7 +170,9 @@ fn main() {
         .add_system(movement.run_in_state(GameStates::InGame))
         .add_system(spawn_enemies.run_in_state(GameStates::InGame))
         .add_system(animate_sprite.run_in_state(GameStates::InGame))
+        .add_system(animate_action_sprite.run_in_state(GameStates::InGame))
         .add_system(keyboard_input.run_in_state(GameStates::InGame))
         .add_system(ai_bot_enemy.run_in_state(GameStates::InGame))
+        .add_system(handle_action.run_in_state(GameStates::InGame))
         .run();
 }

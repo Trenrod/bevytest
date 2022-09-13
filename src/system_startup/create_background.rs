@@ -2,7 +2,7 @@ use bevy::prelude::*;
 
 use noise::{utils::*, Perlin};
 
-use crate::ui::loading::ui_loading::InitialisationFlags;
+use crate::{ui::loading::ui_loading::InitialisationFlags, GameAssets};
 
 #[derive(Component)]
 struct Background;
@@ -10,13 +10,13 @@ struct Background;
 /// Creates world
 pub fn create_background(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    game_assets: Res<GameAssets>,
     mut init_state: ResMut<InitialisationFlags>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
-    let texture_handle = asset_server.load("outside.png");
+    // let texture_handle = asset_server.load("atlases/terrain.png");
     let texture_atlas = TextureAtlas::from_grid_with_padding(
-        texture_handle,
+        game_assets.background_terrain.clone(),
         Vec2 { x: 32.0, y: 32.0 },
         8,
         16,

@@ -3,8 +3,38 @@ use bevy::prelude::*;
 use crate::{
     atlas::assets_atlas_animation_from_to::AssetsAtlasAnimationFromTo,
     bundles::animation_bundle::AnimationTimer,
-    components::{animation_frames::AnimationFrames, movement::Movement},
+    components::{
+        animation_frames::{AnimationFrames, AnimationFramesAction},
+        movement::Movement,
+    },
 };
+
+pub fn animate_action_sprite(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut query: Query<(
+        Entity,
+        &mut AnimationTimer,
+        &mut TextureAtlasSprite,
+        &AnimationFramesAction,
+        Option<&Movement>,
+    )>,
+) {
+    for (entitiy, mut timer, mut sprite, anim_frames, movement) in &mut query {
+        timer.timer.tick(time.delta());
+        if timer.timer.just_finished() {
+            // TODO: ado define when move ends let cur_anim_frames: AssetsAtlasAnimationFromTo;
+            let cur_anim_frames = anim_frames.action.clone();
+            if let Some(cur_anim_frames) = cur_anim_frames {
+                if sprite.index + 1 > cur_anim_frames.to {
+                    commands.entity(entitiy).despawn();
+                } else {
+                    sprite.index += 1;
+                }
+            }
+        }
+    }
+}
 
 pub fn animate_sprite(
     time: Res<Time>,

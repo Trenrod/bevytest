@@ -10,3 +10,10 @@ pub struct AnimationFrames {
     pub walk_down: Option<AssetsAtlasAnimationFromTo>,
     pub idle: Option<AssetsAtlasAnimationFromTo>,
 }
+
+#[derive(Component, Clone)]
+pub struct AnimationFramesAction {
+    pub moveing: Option<AssetsAtlasAnimationFromTo>,
+    pub action: Option<AssetsAtlasAnimationFromTo>,
+}
+impl AnimationFramesAction {}

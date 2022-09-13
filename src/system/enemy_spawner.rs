@@ -2,11 +2,12 @@ use bevy::prelude::*;
 use bevy_rapier2d::na::Point2;
 
 use crate::bundles::animation_bundle::AnimationBundle;
+use crate::bundles::enemy_bundle::EnemyBundle;
 use crate::components::markers::PlayerMarker;
 use crate::components::movement::Movement;
-use crate::config::enemy_configs::EnemyConfig;
+use crate::config::enemy_configs::{EnemyConfig, ENEMY_LICH};
 use crate::helper::animation::get_default_animation_timer;
-use crate::statics::{ENEMY_ANIMATION_SPRITE_INDEX_NOIDLE_NOATTACK, ENEMY_LICH};
+use crate::statics::{ENEMY_ANIMATION_SPRITE_INDEX_NOIDLE_NOATTACK, ENEMY_Z_LAYER};
 
 use crate::components::health::{Health, HealthRegeneration};
 
@@ -21,19 +22,6 @@ pub struct AIBotEnemyConfig;
 
 #[derive(Component)]
 pub struct EnemyMarker;
-
-#[derive(Bundle)]
-pub struct EnemyBundle {
-    pub health: Health,
-    pub health_regeneration: HealthRegeneration,
-    pub movement: Movement,
-    pub enemy_marker: EnemyMarker,
-    pub ai_bot_enemy: AIBotEnemyConfig,
-    #[bundle]
-    pub animation: AnimationBundle,
-    #[bundle]
-    pub sprite: SpriteSheetBundle,
-}
 
 pub fn ai_bot_enemy(
     mut commands: Commands,
@@ -107,7 +95,11 @@ pub fn spawn_enemies(
                 },
                 sprite: SpriteSheetBundle {
                     texture_atlas: texture_atlas_handle,
-                    transform: Transform::from_scale(Vec3::splat(1.0)),
+                    transform: Transform {
+                        rotation: Quat::IDENTITY,
+                        scale: Vec3::splat(1.0),
+                        translation: Vec3::new(0.0, 0.0, ENEMY_Z_LAYER),
+                    },
                     ..Default::default()
                 },
                 movement: Movement {

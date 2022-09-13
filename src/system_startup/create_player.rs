@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::{AssetServer, Assets, Commands, Res, ResMut, Transform, Vec2, Vec3},
+    prelude::{Assets, Commands, Quat, Res, ResMut, Transform, Vec2, Vec3},
     sprite::{SpriteSheetBundle, TextureAtlas},
 };
 
@@ -11,30 +11,24 @@ use crate::{
         movement::Movement,
     },
     helper::animation::get_default_animation_timer,
-    statics::PLAYER_CONFIG_SWORDFIGHTER,
+    statics::{PLAYER_CONFIG_SWORDFIGHTER, PLAYER_Z_LAYER},
     ui::loading::ui_loading::InitialisationFlags,
+    GameAssets,
 };
 
-/// Creates a player controlled component bundle
-pub fn spawn_player(
-    mut commands: Commands,
-    mut init_state: ResMut<InitialisationFlags>,
-    asset_server: Res<AssetServer>,
+fn create_player_bundle(
+    game_assets: Res<GameAssets>,
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
-) {
+) -> PlayerBundle {
     // Load texture resources
-    let texture_handle = asset_server.load("swordfighter.png");
-
-    let texture_atlas = TextureAtlas::from_grid_with_padding(
-        texture_handle,
+    let texture_atlas = TextureAtlas::from_grid(
+        game_assets.player_swordfighter.clone(),
         PLAYER_CONFIG_SWORDFIGHTER
             .sprite_details
             .single_sprite_dimension
             .get_vec2(),
         PLAYER_CONFIG_SWORDFIGHTER.sprite_details.columns,
         PLAYER_CONFIG_SWORDFIGHTER.sprite_details.rows,
-        Vec2::new(0.0, 0.0),
-        Vec2::new(0.0, 0.0),
     );
 
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
@@ -56,10 +50,26 @@ pub fn spawn_player(
         },
         sprite: SpriteSheetBundle {
             texture_atlas: texture_atlas_handle,
-            transform: Transform::from_scale(Vec3::splat(1.0)),
+            transform: Transform {
+                rotation: Quat::IDENTITY,
+                scale: Vec3::splat(1.0),
+                translation: Vec3::new(0.0, 0.0, PLAYER_Z_LAYER),
+            },
             ..Default::default()
         },
     };
+    player_bundle
+}
+
+/// Creates a player controlled component bundle
+pub fn spawn_player(
+    mut commands: Commands,
+    mut init_state: ResMut<InitialisationFlags>,
+    game_assets: Res<GameAssets>,
+    texture_atlases: ResMut<Assets<TextureAtlas>>,
+) {
+    println!("Spawn player");
+    let player_bundle = create_player_bundle(game_assets, texture_atlases);
 
     commands.spawn_bundle(player_bundle);
     init_state.player_created = true;

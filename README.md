@@ -10,15 +10,22 @@ PoC of bevy features to create a simple game.
 - [X] Simple text ui
 - [ ] ui - Player state
 - [ ] Interactive ui - Menu
-- [ ] Enemy spawn
-- [ ] Player attack Animation + Logic
-	- [ ] Close
+- [X] Enemy spawn
+- [ ] Player attack
+	- [X] Close animation
 	- [ ] Far Bullet (Hit-Dmg)
 	- [ ] Far Spell (Hit-Dmg-Spell)
+	- [ ] Apply dmg
+	- [ ] Apply dmg over time
 - [ ] Enemy attack
+	- [X] Close animation
+	- [ ] Far Bullet (Hit-Dmg)
+	- [ ] Far Spell (Hit-Dmg-Spell)
+	- [ ] Apply dmg
+	- [ ] Apply dmg over time
 - [ ] Player defense
-- [-] Physics 
-	- [-] Hit detection
+- [ ] Physics 
+	- [ ] Hit detection
 	- [ ] Movement by Physics engine
 	- [ ] Temporal influence (stunn, slowed)
 - [ ] Network
@@ -47,4 +54,4 @@ PoC of bevy features to create a simple game.
 
 ## Update 10.09.2022
 
-![22-09-11](doc/gifs/22-09-11.gif)
+![22-09-13](doc/gifs/22-09-13.gif)
