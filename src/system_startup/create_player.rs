@@ -1,30 +1,22 @@
 use bevy::{
     prelude::{AssetServer, Assets, Commands, Res, ResMut, Transform, Vec2, Vec3},
     sprite::{SpriteSheetBundle, TextureAtlas},
-    time::Timer,
 };
 
 use crate::{
-    bundles::{
-        animation_bundle::{AnimationBundle, AnimationTimer},
-        player_bundle::PlayerBundle,
-    },
+    bundles::{animation_bundle::AnimationBundle, player_bundle::PlayerBundle},
     components::{
-        animation_frames::AnimationFrames,
         health::{Health, HealthRegeneration},
-        markers::Player,
+        markers::PlayerMarker,
         movement::Movement,
     },
-    statics::{
-        ASSETS_PLAYER_SPRITE_ANIMATAION_DOWN, ASSETS_PLAYER_SPRITE_ANIMATAION_IDLE,
-        ASSETS_PLAYER_SPRITE_ANIMATAION_LEFT, ASSETS_PLAYER_SPRITE_ANIMATAION_RIGHT,
-        ASSETS_PLAYER_SPRITE_ANIMATAION_UP, ASSETS_PLAYER_SPRITE_DIMENSION,
-    },
+    helper::animation::get_default_animation_timer,
+    statics::PLAYER_CONFIG_SWORDFIGHTER,
     ui::loading::ui_loading::InitialisationFlags,
 };
 
 /// Creates a player controlled component bundle
-pub fn create_player(
+pub fn spawn_player(
     mut commands: Commands,
     mut init_state: ResMut<InitialisationFlags>,
     asset_server: Res<AssetServer>,
@@ -35,9 +27,12 @@ pub fn create_player(
 
     let texture_atlas = TextureAtlas::from_grid_with_padding(
         texture_handle,
-        ASSETS_PLAYER_SPRITE_DIMENSION,
-        3,
-        7,
+        PLAYER_CONFIG_SWORDFIGHTER
+            .sprite_details
+            .single_sprite_dimension
+            .get_vec2(),
+        PLAYER_CONFIG_SWORDFIGHTER.sprite_details.columns,
+        PLAYER_CONFIG_SWORDFIGHTER.sprite_details.rows,
         Vec2::new(0.0, 0.0),
         Vec2::new(0.0, 0.0),
     );
@@ -47,25 +42,17 @@ pub fn create_player(
     // let texture_atlas_handle = texture_atlases.get_handle();
     let player_bundle = PlayerBundle {
         health: Health { hp: 100.0 },
-        marker: Player,
+        marker: PlayerMarker,
         movement: Movement {
             velocity_unit_vector: Vec2::new(0.0, 0.0),
-            speed: 10.0,
+            speed: 100.0,
         },
         health_regeneration: HealthRegeneration {
             regeneration_rate_per_second: 1.0,
         },
         animation: AnimationBundle {
-            frames: AnimationFrames {
-                walk_right: ASSETS_PLAYER_SPRITE_ANIMATAION_RIGHT,
-                walk_left: ASSETS_PLAYER_SPRITE_ANIMATAION_LEFT,
-                walk_up: Some(ASSETS_PLAYER_SPRITE_ANIMATAION_UP),
-                walk_down: Some(ASSETS_PLAYER_SPRITE_ANIMATAION_DOWN),
-                idle: Some(ASSETS_PLAYER_SPRITE_ANIMATAION_IDLE),
-            },
-            timer: AnimationTimer {
-                timer: Timer::from_seconds(0.15, true),
-            },
+            frames: PLAYER_CONFIG_SWORDFIGHTER.animation_frames,
+            timer: get_default_animation_timer(),
         },
         sprite: SpriteSheetBundle {
             texture_atlas: texture_atlas_handle,

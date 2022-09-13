@@ -1,6 +1,6 @@
 use bevy::prelude::Component;
 
-use crate::statics::AssetsAtlasAnimationFromTo;
+use crate::atlas::assets_atlas_animation_from_to::AssetsAtlasAnimationFromTo;
 
 #[derive(Component)]
 pub struct AnimationFrames {

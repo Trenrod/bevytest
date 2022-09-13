@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
+    atlas::assets_atlas_animation_from_to::AssetsAtlasAnimationFromTo,
     bundles::animation_bundle::AnimationTimer,
     components::{animation_frames::AnimationFrames, movement::Movement},
-    statics::AssetsAtlasAnimationFromTo,
 };
 
 pub fn animate_sprite(
@@ -19,9 +19,9 @@ pub fn animate_sprite(
         timer.timer.tick(time.delta());
         if timer.timer.just_finished() {
             let cur_anim_frames: AssetsAtlasAnimationFromTo;
-            if movement.velocity_unit_vector.x > 0.0 {
+            if movement.velocity_unit_vector.x > 0.2 {
                 cur_anim_frames = anim_frames.walk_right.clone();
-            } else if movement.velocity_unit_vector.x < 0.0 {
+            } else if movement.velocity_unit_vector.x < -0.2 {
                 cur_anim_frames = anim_frames.walk_left.clone();
             } else if movement.velocity_unit_vector.y > 0.0 {
                 cur_anim_frames = match anim_frames.walk_up.clone() {

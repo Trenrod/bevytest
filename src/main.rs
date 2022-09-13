@@ -1,7 +1,10 @@
 mod atlas;
 mod bundles;
 mod components;
+mod config;
 mod game_states;
+mod helper;
+mod models;
 mod plugins;
 mod statics;
 mod system;
@@ -13,22 +16,21 @@ use bevy_editor_pls::prelude::*;
 use bevy::{prelude::*, render::texture::ImageSettings};
 
 use bevy_asset_loader::prelude::*;
-use components::{markers::Player, movement::Movement};
+use components::{markers::PlayerMarker, movement::Movement};
 use iyes_loopless::prelude::*;
 
 use game_states::GameStates;
-use system::{anim_sprites::animate_sprite, keyboard_input::keyboard_input};
-use system_startup::{create_background::create_background, create_player::create_player};
+use system::{
+    anim_sprites::animate_sprite,
+    enemy_spawner::{ai_bot_enemy, spawn_enemies, spawn_enemy_config},
+    keyboard_input::keyboard_input,
+    movement::movement,
+};
+use system_startup::{create_background::create_background, create_player::spawn_player};
 use ui::loading::ui_loading::{
     init_loading_screen, remote_loading_ui, update_loading_screen, update_loading_state,
     InitialisationFlags,
 };
-
-fn move_player(time: Res<Time>, mut query: Query<(&Movement, &mut Transform, With<Player>)>) {
-    let (movement, mut transform, ()) = query.single_mut();
-    transform.translation.x += time.delta().as_secs_f32() * movement.velocity_unit_vector.x * 100.0;
-    transform.translation.y += time.delta().as_secs_f32() * movement.velocity_unit_vector.y * 100.0;
-}
 
 fn system_startup(mut commands: Commands) {
     // Spawn camera
@@ -68,11 +70,14 @@ fn main() {
         // === GameStates::GeneratingWorld
         .add_enter_system(GameStates::GeneratingWorld, update_loading_state)
         .add_enter_system(GameStates::GeneratingWorld, create_background)
-        .add_enter_system(GameStates::GeneratingWorld, create_player)
+        .add_enter_system(GameStates::GeneratingWorld, spawn_player)
         // === GameStates::InGame
         .add_enter_system(GameStates::InGame, remote_loading_ui)
-        .add_system(move_player.run_in_state(GameStates::InGame))
+        .add_enter_system(GameStates::InGame, spawn_enemy_config)
+        .add_system(movement.run_in_state(GameStates::InGame))
+        .add_system(spawn_enemies.run_in_state(GameStates::InGame))
         .add_system(animate_sprite.run_in_state(GameStates::InGame))
         .add_system(keyboard_input.run_in_state(GameStates::InGame))
+        .add_system(ai_bot_enemy.run_in_state(GameStates::InGame))
         .run();
 }

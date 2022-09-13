@@ -2,7 +2,7 @@ use bevy::{prelude::Bundle, sprite::SpriteSheetBundle};
 
 use crate::components::{
     health::{Health, HealthRegeneration},
-    markers::Player,
+    markers::PlayerMarker,
     movement::Movement,
 };
 
@@ -13,7 +13,7 @@ pub struct PlayerBundle {
     pub health: Health,
     pub health_regeneration: HealthRegeneration,
     pub movement: Movement,
-    pub marker: Player,
+    pub marker: PlayerMarker,
     #[bundle]
     pub animation: AnimationBundle,
     #[bundle]
