@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier2d::na::Point2;
+use bevy_rapier2d::prelude::{ActiveCollisionTypes, ActiveEvents, Collider, RigidBody, Sensor};
 
 use crate::bundles::animation_bundle::AnimationBundle;
 use crate::bundles::enemy_bundle::EnemyBundle;
@@ -81,34 +82,45 @@ pub fn spawn_enemies(
                 Vec2::new(0.0, 0.0),
             );
 
+            let collider = Collider::compound(vec![(
+                Vec2::new(0.0, -20.0),
+                0.0,
+                Collider::cuboid(15.0, 30.0),
+            )]);
+
             let texture_atlas_handle = texture_atlases.add(texture_atlas);
-            commands.spawn_bundle(EnemyBundle {
-                animation: {
-                    AnimationBundle {
-                        frames: ENEMY_ANIMATION_SPRITE_INDEX_NOIDLE_NOATTACK,
-                        timer: get_default_animation_timer(),
-                    }
-                },
-                health: Health { hp: 1000.0 },
-                health_regeneration: HealthRegeneration {
-                    regeneration_rate_per_second: 5.0,
-                },
-                sprite: SpriteSheetBundle {
-                    texture_atlas: texture_atlas_handle,
-                    transform: Transform {
-                        rotation: Quat::IDENTITY,
-                        scale: Vec3::splat(1.0),
-                        translation: Vec3::new(0.0, 0.0, ENEMY_Z_LAYER),
+            commands
+                .spawn()
+                .insert_bundle(EnemyBundle {
+                    animation: {
+                        AnimationBundle {
+                            frames: ENEMY_ANIMATION_SPRITE_INDEX_NOIDLE_NOATTACK,
+                            timer: get_default_animation_timer(),
+                        }
                     },
-                    ..Default::default()
-                },
-                movement: Movement {
-                    velocity_unit_vector: Vec2 { x: 0.0, y: 0.0 },
-                    speed: 25.0,
-                },
-                enemy_marker: EnemyMarker {},
-                ai_bot_enemy: AIBotEnemyConfig,
-            });
+                    health: Health { hp: 1000.0 },
+                    health_regeneration: HealthRegeneration {
+                        regeneration_rate_per_second: 5.0,
+                    },
+                    sprite: SpriteSheetBundle {
+                        texture_atlas: texture_atlas_handle,
+                        transform: Transform {
+                            rotation: Quat::IDENTITY,
+                            scale: Vec3::splat(1.0),
+                            translation: Vec3::new(0.0, 0.0, ENEMY_Z_LAYER),
+                        },
+                        ..Default::default()
+                    },
+                    movement: Movement {
+                        velocity_unit_vector: Vec2 { x: 0.0, y: 0.0 },
+                        speed: 25.0,
+                    },
+                    enemy_marker: EnemyMarker {},
+                    ai_bot_enemy: AIBotEnemyConfig,
+                    collider: collider,
+                })
+                .insert(ActiveCollisionTypes::STATIC_STATIC)
+                .insert(ActiveEvents::COLLISION_EVENTS);
         }
     }
 }

@@ -15,21 +15,15 @@ mod ui;
 use bevy_editor_pls::prelude::*;
 
 use bevy::{
-    ecs::system::EntityCommands,
     prelude::*,
     render::texture::{self, ImageSettings},
 };
 
 use bevy_asset_loader::prelude::*;
-use bundles::{action_bundle::ActionInstantBundle, animation_bundle::AnimationActionBundle};
-use components::{
-    damage::Damage,
-    markers::{InstantActionMarker, PlayerMarker},
-    movement::Movement,
-};
-use config::action_config::{ActionConfig, ACTION_CONFIG_FIRE_SLASH};
+use bevy_rapier2d::prelude::*;
+use components::{markers::PlayerMarker, movement::Movement};
+use config::action_config::ACTION_CONFIG_FIRE_SLASH;
 use events::player_action_event::PlayerActionEvent;
-use helper::animation::get_default_animation_timer;
 use iyes_loopless::prelude::*;
 
 use game_states::GameStates;
@@ -102,7 +96,6 @@ fn handle_action(
     mut texture_atlases: ResMut<Assets<TextureAtlas>>,
 ) {
     for ev in ev_player_action.iter() {
-        println!("handle_action");
         if let Ok((player_transform, player_movement)) = player_query.get(ev.entity) {
             // Dont spawn if not moving
             if player_movement.velocity_unit_vector.x == 0.0
@@ -135,6 +128,20 @@ fn handle_action(
     }
 }
 
+/* A system that displays the events. */
+fn display_events(
+    mut collision_events: EventReader<CollisionEvent>,
+    mut contact_force_events: EventReader<ContactForceEvent>,
+) {
+    for collision_event in collision_events.iter() {
+        println!("Received collision event: {:?}", collision_event);
+    }
+
+    for contact_force_event in contact_force_events.iter() {
+        println!("Received contact force event: {:?}", contact_force_event);
+    }
+}
+
 fn main() {
     App::new()
         // prevents blurry sprites
@@ -149,6 +156,9 @@ fn main() {
         .add_event::<PlayerActionEvent>()
         // Add camera
         .add_startup_system(system_startup)
+        // Add physics
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        .add_plugin(RapierDebugRenderPlugin::default())
         // Initial GameState state
         .add_loopless_state(GameStates::LoadingAssets)
         // General system
@@ -173,6 +183,7 @@ fn main() {
         .add_system(animate_action_sprite.run_in_state(GameStates::InGame))
         .add_system(keyboard_input.run_in_state(GameStates::InGame))
         .add_system(ai_bot_enemy.run_in_state(GameStates::InGame))
+        .add_system(display_events.run_in_state(GameStates::InGame))
         .add_system(handle_action.run_in_state(GameStates::InGame))
         .run();
 }

@@ -2,6 +2,7 @@ use bevy::{
     prelude::{Assets, Commands, Quat, Res, ResMut, Transform, Vec2, Vec3},
     sprite::{SpriteSheetBundle, TextureAtlas},
 };
+use bevy_rapier2d::prelude::{ActiveCollisionTypes, ActiveEvents, Collider};
 
 use crate::{
     bundles::{animation_bundle::AnimationBundle, player_bundle::PlayerBundle},
@@ -36,14 +37,14 @@ fn create_player_bundle(
     // let texture_atlas_handle = texture_atlases.get_handle();
     let player_bundle = PlayerBundle {
         health: Health { hp: 100.0 },
-        marker: PlayerMarker,
+        health_regeneration: HealthRegeneration {
+            regeneration_rate_per_second: 1.0,
+        },
         movement: Movement {
             velocity_unit_vector: Vec2::new(0.0, 0.0),
             speed: 100.0,
         },
-        health_regeneration: HealthRegeneration {
-            regeneration_rate_per_second: 1.0,
-        },
+        marker: PlayerMarker,
         animation: AnimationBundle {
             frames: PLAYER_CONFIG_SWORDFIGHTER.animation_frames,
             timer: get_default_animation_timer(),
@@ -57,6 +58,11 @@ fn create_player_bundle(
             },
             ..Default::default()
         },
+        collider: (Collider::compound(vec![(
+            Vec2::new(0.0, -20.0),
+            0.0,
+            Collider::cuboid(15.0, 30.0),
+        )])),
     };
     player_bundle
 }
@@ -70,7 +76,9 @@ pub fn spawn_player(
 ) {
     println!("Spawn player");
     let player_bundle = create_player_bundle(game_assets, texture_atlases);
-
-    commands.spawn_bundle(player_bundle);
+    commands
+        .spawn_bundle(player_bundle)
+        .insert(ActiveCollisionTypes::STATIC_STATIC)
+        .insert(ActiveEvents::COLLISION_EVENTS);
     init_state.player_created = true;
 }

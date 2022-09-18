@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::Collider;
 
 use crate::{
     components::{
@@ -16,6 +17,7 @@ pub struct EnemyBundle {
     pub health_regeneration: HealthRegeneration,
     pub movement: Movement,
     pub enemy_marker: EnemyMarker,
+    pub collider: Collider,
     pub ai_bot_enemy: AIBotEnemyConfig,
     #[bundle]
     pub animation: AnimationBundle,

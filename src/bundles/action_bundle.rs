@@ -1,5 +1,9 @@
 use bevy::prelude::*;
-use bevy_rapier2d::na::Point2;
+use bevy_rapier2d::{
+    na::{Point2, Vector2},
+    prelude::Collider,
+    rapier::prelude::ColliderBuilder,
+};
 
 use crate::{
     atlas::atlas_sprite_details::AtlasSpriteDetails,
@@ -27,7 +31,6 @@ pub fn create_action_bundle(
     looking_direction: &Vec2,
 ) -> ActionInstantBundle {
     // Load texture resources
-
     let translation = Vec3::new(
         spawn_position.x + (50.0 * looking_direction.x),
         spawn_position.y + (50.0 * looking_direction.y),
@@ -35,6 +38,17 @@ pub fn create_action_bundle(
     );
     // let rotation = Quat::from_rotation_y((75.0_f32).to_radians());
     let rotation = Quat::from_rotation_arc_2d(Vec2::new(1.0, 0.0), looking_direction.clone());
+
+    let point1 = Vec2::new(0.0, 30.0);
+    let point2 = Vec2::new(25.0, 75.0);
+    let point3 = Vec2::new(25.0, -75.0);
+    let point4 = Vec2::new(0.0, -30.0);
+    let points: Vec<Vec2> = vec![point1, point2, point3, point4];
+    let collider = Collider::compound(vec![(
+        Vec2::new(0.0, 0.0),
+        0.0,
+        Collider::convex_hull(&points).unwrap(),
+    )]);
 
     // let texture_atlas_handle = texture_atlases.get_handle();
     let action_instant_bundle = ActionInstantBundle {
@@ -58,6 +72,7 @@ pub fn create_action_bundle(
             },
             ..Default::default()
         },
+        collider: collider,
     };
     action_instant_bundle
 }
@@ -67,6 +82,7 @@ pub struct ActionInstantBundle {
     pub damage: Damage,
     // pub movement: Movement,
     // pub destination: ProjectileDestination,
+    pub collider: Collider,
     pub marker: InstantActionMarker,
     #[bundle]
     pub animation: AnimationActionBundle,
